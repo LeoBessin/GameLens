@@ -1,4 +1,4 @@
-package com.example.gamelens.ui.theme
+package com.example.gamelens.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,27 +10,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-fun main() = runBlocking {
-    val viewModel = MainViewModel()
-
-    val job = launch {
-        viewModel.runInProgress.collect { inProgress ->
-            if (inProgress) {
-                println("Loading...")
-            }
-        }
-    }
-
-    viewModel.loadGames(1)
-
-    viewModel.runInProgress.first { !it }
-
-    job.cancel()
-
-    println("List : ${viewModel.dataList.value}")
-    println("ErrorMessage : ${viewModel.errorMessage.value}" )
-}
-
 class MainViewModel : ViewModel() {
     val dataList = MutableStateFlow(emptyList<PictureBean>())
     val runInProgress = MutableStateFlow(false)
@@ -38,6 +17,7 @@ class MainViewModel : ViewModel() {
 
     fun loadGames(page:Int){
         runInProgress.value = true
+        errorMessage.value = ""
         viewModelScope.launch(Dispatchers.IO){
             try {
                 val games: List<Game> = GameRepository.loadGames(page)
@@ -55,6 +35,33 @@ class MainViewModel : ViewModel() {
                 runInProgress.value = false
             }
         }
+    }
+
+    fun searchGames(query: String) {
+        runInProgress.value = true
+        errorMessage.value = ""
+        dataList.value = emptyList() // Clear previous results
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val games: List<Game> = GameRepository.loadGamesBySearch(query)
+                dataList.value = games.map { game ->
+                    PictureBean(
+                        game.id,
+                        game.background_image,
+                        game.name,
+                        game.slug
+                    )
+                }
+            } catch (e: Exception) {
+                errorMessage.value = e.message.toString()
+            } finally {
+                runInProgress.value = false
+            }
+        }
+    }
+
+    init {
+        loadGames(1)
     }
 }
 

@@ -14,20 +14,20 @@ object GameRepository {
     private val gson = Gson()
 
     fun loadGames(page:Int):  List<Game> {
-        val json : String = Request.sendGet("https://api.rawg.io/api/games?key=${Constants.API_KEY}&page=$page")
-        val weatherResponse : RAWGResponse = gson.fromJson(json, RAWGResponse::class.java)
-        return  weatherResponse.results
+        val json : String = Request.sendGet("${Constants.BASE_URL}?key=${Constants.API_KEY}&page=$page")
+        val rawgResponse : RAWGResponse = gson.fromJson(json, RAWGResponse::class.java)
+        return  rawgResponse.results
     }
 
     fun loadGame(id:Int): Game {
-        val json : String = Request.sendGet("https://api.rawg.io/api/games/$id?key=${Constants.API_KEY}")
+        val json : String = Request.sendGet("${Constants.BASE_URL}/$id?key=${Constants.API_KEY}")
         return gson.fromJson(json, Game::class.java)
     }
 
     fun loadGamesBySearch(search:String): List<Game> {
-        val json : String = Request.sendGet("https://api.rawg.io/api/games?key=${Constants.API_KEY}&page=1&search=$search")
-        val weatherResponse : RAWGResponse = gson.fromJson(json, RAWGResponse::class.java)
-        return  weatherResponse.results
+        val json : String = Request.sendGet("${Constants.BASE_URL}?key=${Constants.API_KEY}&page=1&search=$search")
+        val rawgResponse : RAWGResponse = gson.fromJson(json, RAWGResponse::class.java)
+        return  rawgResponse.results
     }
 }
 
