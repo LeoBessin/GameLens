@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="search_hint">Votre recherche ici</string>
-    <string name="clear_filter">Supprimer données</string>
-    <string name="load_data">Charger données</string>
+    <string name="clear_filter">Supprimer</string>
+    <string name="load_data">Charger</string>
 </resources>

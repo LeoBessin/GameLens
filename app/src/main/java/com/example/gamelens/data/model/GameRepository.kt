@@ -3,20 +3,17 @@ import com.example.gamelens.util.Constants
 import com.example.gamelens.util.Request
 import com.google.gson.Gson
 
-
-fun main() {
-    GameRepository.loadGames(1).forEach { game ->
-        println(game)
-    }
-}
-
 object GameRepository {
     private val gson = Gson()
 
-    fun loadGames(page:Int):  List<Game> {
+    fun loadGames(page:Int):  SearchResponse {
         val json : String = Request.sendGet("${Constants.BASE_URL}?key=${Constants.API_KEY}&page=$page")
         val rawgResponse : RAWGResponse = gson.fromJson(json, RAWGResponse::class.java)
-        return  rawgResponse.results
+        return SearchResponse(
+            next = rawgResponse.next,
+            previous = rawgResponse.previous,
+            results = rawgResponse.results
+        )
     }
 
     fun loadGame(id:Int): Game {
@@ -24,12 +21,25 @@ object GameRepository {
         return gson.fromJson(json, Game::class.java)
     }
 
-    fun loadGamesBySearch(search:String): List<Game> {
-        val json : String = Request.sendGet("${Constants.BASE_URL}?key=${Constants.API_KEY}&page=1&search=$search")
+    fun loadGamesBySearch(search:String,page:Int): SearchResponse {
+        if (search.isBlank()) {
+            return loadGames(1)
+        }
+        val json : String = Request.sendGet("${Constants.BASE_URL}?key=${Constants.API_KEY}&page=$page&search=$search")
         val rawgResponse : RAWGResponse = gson.fromJson(json, RAWGResponse::class.java)
-        return  rawgResponse.results
+        return SearchResponse(
+            next = rawgResponse.next,
+            previous = rawgResponse.previous,
+            results = rawgResponse.results
+        )
     }
 }
+
+data class SearchResponse(
+    val next: String?,
+    val previous: String?,
+    val results: List<Game>,
+)
 
 data class RAWGResponse(
     val count: Int,
@@ -43,10 +53,13 @@ data class Game(
     val name: String,
     val slug: String,
     val released: String,
-    val background_image: String,
+    val background_image: String? = null,
     val rating: Double,
     val ratings_count: Int,
     val platforms: List<Platform>,
+    val parent_platforms: List<Platform>,
+    val playtime: Int,
+    val metacritic: Int? = null,
 ) {
 
     override fun toString(): String {
